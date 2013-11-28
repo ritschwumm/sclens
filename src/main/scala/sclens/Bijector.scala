@@ -5,7 +5,6 @@ import scala.reflect.macros.Context
 
 import scutil.lang._
 import scutil.Implicits._
-import scutil.tried._
 
 /** creates bijections from the apply/unapply methods in a case classes' companion object */
 object Bijector {

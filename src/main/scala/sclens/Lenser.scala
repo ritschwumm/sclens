@@ -5,7 +5,6 @@ import scala.reflect.macros.Context
 
 import scutil.lang._
 import scutil.Implicits._
-import scutil.tried._
 
 /** creates lens instances for a case classes' fields */
 object Lenser {
