@@ -2,16 +2,15 @@ name			:= "sclens"
 
 organization	:= "de.djini"
 
-version			:= "0.11.0"
+version			:= "0.12.0"
 
 scalaVersion	:= "2.10.2"
 
 libraryDependencies	++= Seq(
-	"de.djini"		%%	"scutil"	% "0.24.0"	% "compile",
-	"org.specs2"	%%	"specs2"	% "1.14"	% "test"
+	"de.djini"			%%	"scutil"		% "0.25.0"				% "compile",
+	"org.scala-lang"	%	"scala-reflect" % scalaVersion.value	% "compile",
+	"org.specs2"		%%	"specs2"		% "1.14"				% "test"	exclude("org.scala-lang", "scala-library")
 )
-
-libraryDependencies	+= "org.scala-lang" % "scala-reflect" % scalaVersion.value
 
 scalacOptions	++= Seq(
 	"-deprecation",
