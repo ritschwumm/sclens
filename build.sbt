@@ -2,7 +2,7 @@ name			:= "sclens"
 
 organization	:= "de.djini"
 
-version			:= "0.10.0"
+version			:= "0.11.0"
 
 scalaVersion	:= "2.10.2"
 
@@ -11,7 +11,7 @@ libraryDependencies	++= Seq(
 	"org.specs2"	%%	"specs2"	% "1.14"	% "test"
 )
 
-libraryDependencies	<+= (scalaVersion) { "org.scala-lang" % "scala-reflect" % _ }
+libraryDependencies	+= "org.scala-lang" % "scala-reflect" % scalaVersion.value
 
 scalacOptions	++= Seq(
 	"-deprecation",

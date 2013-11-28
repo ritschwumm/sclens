@@ -8,6 +8,7 @@ import scutil.Implicits._
 case class Unary(a:Int)
 case class Binary(a:Int, b:Short)
 case class Container(x:Unary)
+case class UnaryOption(a:Option[Int])
 
 class BijectorTest extends Specification {
 	"bijections" should {
@@ -25,6 +26,11 @@ class BijectorTest extends Specification {
 			val value		= Container(Unary(1))
 			val	bijection	= Bijector[Container]
 			bijection write value mustEqual Unary(1)
+		}
+		"work with unary case classes where the argument is a Product" in {
+			val value		= UnaryOption(Some(1))
+			val	bijection	= Bijector[UnaryOption]
+			bijection write value mustEqual Some(1)
 		}
 	}
 }

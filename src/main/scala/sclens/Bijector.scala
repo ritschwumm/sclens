@@ -65,31 +65,45 @@ object Bijector {
 							.singleOption 
 							.toWin	(s"expected unapply Option to return a single value")
 							
-					// List(Int)	List(Int, Short)
-					applySignature	<-
+					unapplySignature	<-
 							unapplySingle match {
-								// NOTE nested case classes implement Product, too
-								case t @ TypeRef(_, _, args)	
-								if t <:< typeOf[Product] && args.nonEmpty		=> Win(args)
-								case t @ TypeRef(_, _, _)						=> Win(List(t))
-								case x											=> Fail(s"unexpected unapply return ${x}")
+								case t @ TypeRef(_, _, _)	=> Win(t)
+								case x						=> Fail(s"unexpected unapply return ${x}")
 							}
-					
+							
 					applySymbol		<- getDeclaration(companionType, "apply")
 					applyMethods	= applySymbol.asMethod.alternatives
 					
+					// (method, raw signature)
+					applyMethods0	=
+							for {
+								method	<- applyMethods collect { case (method:MethodSymbol) => method }
+								params	<- method.paramss.singleOption
+							}
+							yield (
+								method, 
+								params map { _.asTerm.typeSignature }
+							)
+							
+					// (method, flat signature)
 					applyMethods1	=
-							applyMethods 
-							.collect {
-								 case (method:MethodSymbol) 
-								 if method.paramss.singleOption map { _ map { _.asTerm.typeSignature } } exists { _ == applySignature }
-								 => method
+							applyMethods0 filter { case (applyMethod, applySignature) =>
+								applySignature.size match {
+									case 0	=> false	// should not happen
+									case 1	=> applySignature == List(unapplySignature)
+									case n	=> applySignature == unapplySignature.args &&
+											// TODO make sure this doesn't fail for case classes somehow
+											unapplySignature <:< typeOf[Product]
+								}
 							}
 							
-					applyMethod		<-
+					applyTmp		<-
 							applyMethods1
 							.singleOption
 							.toWin (s"expected a single apply method matching unapply's types")
+							
+					(applyMethod, applySignature)	
+									= applyTmp
 							
 					_				<- 
 							(applyMethod.paramss.size == 1)
