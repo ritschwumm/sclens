@@ -143,8 +143,8 @@ object Bijector {
 				}
 				yield lensCreate
 				
-		out cataSwapped (
-				it	=> c.Expr[Any](c resetAllAttrs it),
-				it	=> c abort (c.enclosingPosition, it))
+		out cata (
+				it	=> c abort (c.enclosingPosition, it),
+				it	=> c.Expr[Any](c resetAllAttrs it))
 	}
 }

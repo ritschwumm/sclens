@@ -116,8 +116,8 @@ object LenserImpl {
 				}
 				yield mkLens("c$", containerTpe, "v$", valueTpe, name)
 				
-		out cataSwapped (
-				it	=> c.Expr[Any](c resetAllAttrs it),
-				it	=> c abort (c.enclosingPosition, it))
+		out cata (
+				it	=> c abort (c.enclosingPosition, it),
+				it	=> c.Expr[Any](c resetAllAttrs it))
 	}
 }
