@@ -40,6 +40,5 @@ class LenserTest extends Specification {
 			val lens		= lenses.a
 			lens put (container, 1337) mustEqual Foo(1337, "hallo")
 		}
-		
 	}
 }

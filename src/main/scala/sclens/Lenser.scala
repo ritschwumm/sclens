@@ -7,6 +7,7 @@ import scutil.lang._
 import scutil.Implicits._
 import scutil.tried._
 
+/** creates lens instances for a case classes' fields */
 object Lenser {
 	// NOTE without the TypeTag T gets passed as Nothing
 	import reflect.runtime.universe._
@@ -59,8 +60,8 @@ object LenserImpl {
 		def mkSetter(containerName:TermName, containerType:Type, valueName:TermName, valueType:Type, fieldName:TermName)	=
 				Function(
 					List(
-						mkParam(containerName, containerType),
-						mkParam(valueName, valueType)
+						mkParam(containerName,	containerType),
+						mkParam(valueName,		valueType)
 					),
 					Apply(
 						mkAccess(containerName, "copy"),
