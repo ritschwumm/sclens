@@ -8,9 +8,7 @@ import scutil.Implicits._
 
 /** creates lens instances for a case classes' fields */
 object Lenser {
-	// NOTE without the TypeTag T gets passed as Nothing
-	import reflect.runtime.universe._
-	def apply[T:TypeTag]	= new Lenser[T]
+	def apply[T]	= new Lenser[T]
 }
 
 final class Lenser[T] extends Dynamic {

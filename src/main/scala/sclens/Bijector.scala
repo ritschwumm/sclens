@@ -2,14 +2,13 @@ package sclens
 
 import scala.language.experimental.macros
 import scala.reflect.macros.Context
+import reflect.runtime.universe._
 
 import scutil.lang._
 import scutil.Implicits._
 
 /** creates bijections from the apply/unapply methods in a case classes' companion object */
 object Bijector {
-	import reflect.runtime.universe._
-	
 	def apply[T]	= macro applyImpl[T]
 	
 	def applyImpl[T:c.WeakTypeTag](c:Context):c.Expr[Any]	= {
