@@ -37,7 +37,7 @@ object LenserImpl {
 		def mkLens(containerName:TermName, containerType:Type, valueName:TermName, valueType:Type, fieldName:TermName)	=
 				Apply(
 					TypeApply(
-						multiSelect("scutil", "lang", "Lens", "apply"),
+						multiSelect("scutil", "lens", "TLens", "create"),
 						List(
 							TypeTree(containerType),
 							TypeTree(valueType)
