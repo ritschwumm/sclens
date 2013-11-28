@@ -2,25 +2,25 @@ name			:= "sclens"
 
 organization	:= "de.djini"
 
-version			:= "0.15.0"
+version			:= "0.16.0"
 
-scalaVersion	:= "2.10.2"
+scalaVersion	:= "2.10.3"
 
 libraryDependencies	++= Seq(
-	"de.djini"			%%	"scutil"		% "0.27.0"				% "compile",
+	"de.djini"			%%	"scutil"		% "0.28.0"				% "compile",
 	"org.scala-lang"	%	"scala-reflect" % scalaVersion.value	% "compile",
-	"org.specs2"		%%	"specs2"		% "2.2"					% "test"
+	"org.specs2"		%%	"specs2"		% "2.2.2"				% "test"		exclude("org.scala-lang", "scala-library")
 )
 
 scalacOptions	++= Seq(
 	"-deprecation",
 	"-unchecked",
 	// "-language:implicitConversions",
-	// "-language:existentials",
+	"-language:existentials",
 	// "-language:higherKinds",
 	// "-language:reflectiveCalls",
 	"-language:dynamics",
-	// "-language:postfixOps",
+	"-language:postfixOps",
 	// "-language:experimental.macros"
 	"-feature"
 )

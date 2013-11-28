@@ -9,41 +9,24 @@ import scutil.Implicits._
 
 /** creates bijections from the apply/unapply methods in a case classes' companion object */
 object Bijector {
-	def apply[T]	= macro applyImpl[T]
+	def apply[T]	= macro BijectorImpl.apply[T]
+}
+
+private object BijectorImpl {
+	def apply[T:c1.WeakTypeTag](c1:Context):c1.Expr[Any]	=
+			new BijectorImpl { val c:c1.type = c1 } compile;
+}
+
+private abstract class BijectorImpl extends Helper {
+	val c:Context
+	import c.universe._
+		
+	//------------------------------------------------------------------------------
 	
-	def applyImpl[T:c.WeakTypeTag](c:Context):c.Expr[Any]	= {
-		import c.universe._
+	def compile[T:c.WeakTypeTag]:c.Expr[Any]	= {
+		val selfType:Type	= weakTypeOf[T]
 		
-		val selfType	= weakTypeOf[T]
-		
-		def getCompanion(symbol:Symbol)	=
-				symbol.companionSymbol	preventBy
-				{ _ == NoSymbol }		toWin
-				s"unexpected NoSymbol for companion of ${symbol}"
-		
-		def getDeclaration(typ:Type, name:String):Tried[String,Symbol]	=
-				typ					declaration
-			 	newTermName(name)	preventBy 
-			 	{ _ == NoSymbol }	toWin 
-			 	s"unexpected NoSymbol for companion declaration ${name} of type ${typ}"
-				
-		def mkParam(name:TermName, tpe:Type)	=
-				ValDef(
-					Modifiers(Flag.PARAM),
-					name, 
-					TypeTree(tpe),
-					EmptyTree
-				)
-				
-		def multiSelect(start:String, names:String*):RefTree	=
-				multiSelect1(Ident(newTermName(start)), names:_*)
-			
-		def multiSelect1(start:RefTree, names:String*):RefTree	=
-				(names foldLeft start) { (last:RefTree, name:String) => 
-					Select(last, newTermName(name)) 
-				}
-		
-		val out	=
+		val out:Tried[String,Apply]	=
 				for {
 					companionSymbol	<- getCompanion(selfType.typeSymbol)
 					companionType	= companionSymbol.typeSignature
@@ -106,57 +89,67 @@ object Bijector {
 					_				<- 
 							(applyMethod.paramss.size == 1)
 							.tried (s"expected apply to have a single parameter list", ())
-							
-					// write	unapply		call get	T=>(...)
-					writeFunc	=  
-							Function(
-								List(
-									mkParam("it", selfType)
-								),
-								Select(
-									Apply(
-										Select(Ident(companionSymbol), newTermName("unapply")),
-										List(Ident(newTermName("it")))
-									),
-									newTermName("get")
-								)
-							)
-							
-					// read		apply		tuple input	(...)=>T
-					readFunc	=  
-							Function(
-								List(
-									mkParam("it", unapplySingle)
-								),
-								Apply(
-									Select(Ident(companionSymbol), newTermName("apply")),
-									if (applySignature.size == 1) {
-										List(
-											Ident(newTermName("it"))
-										)
-									}
-									else {
-										(1 to applySignature.size).toList map { i =>
-											multiSelect("it", "_"+i)
-										}
-									}
-								)
-							)
-							
-					lensCreate	=
-							// BETTER typeApply?
-							Apply(
-								multiSelect("scutil", "lang", "Bijection", "apply"),
-								List(
-									writeFunc,
-									readFunc
-								)
-							)
 				}
-				yield lensCreate
-				
-		out cata (
-				it	=> c abort (c.enclosingPosition, it),
-				it	=> c.Expr[Any](c resetAllAttrs it))
+				yield mkBijection(
+					mkWriteFunc(companionSymbol, selfType), 
+					mkReadFunc(companionSymbol, applySignature, unapplySingle)
+				)
+			
+		result(out)
 	}
+	
+	def mkBijection(writeFunc:Function, readFunc:Function):Apply =
+			// BETTER use typeApply?
+			Apply(
+				multiSelect("scutil", "lang", "Bijection", "apply"),
+				List(
+					writeFunc,
+					readFunc
+				)
+			)
+			
+	// write	unapply		call get	T=>(...)
+	def mkWriteFunc(companionSymbol:Symbol, selfType:Type):Function	=
+			Function(
+				List(
+					mkParam("it", selfType)
+				),
+				Select(
+					Apply(
+						multiSelect(companionSymbol, "unapply"),
+						List(stringIdent("it"))
+					),
+					newTermName("get")
+				)
+			)
+			
+	// read		apply		tuple input	(...)=>T
+	def mkReadFunc(companionSymbol:Symbol, applySignature:List[Type], unapplySingle:Type):Function	=
+			Function(
+				List(
+					mkParam("it", unapplySingle)
+				),
+				Apply(
+					multiSelect(companionSymbol, "apply"),
+					if (applySignature.size == 1) {
+						List(stringIdent("it"))
+					}
+					else {
+						(1 to applySignature.size).toList map { i =>
+							multiSelect("it", "_"+i)
+						}
+					}
+				)
+			)
+			
+	def getCompanion(symbol:Symbol)	=
+			symbol.companionSymbol	preventBy
+			{ _ == NoSymbol }		toWin
+			s"unexpected NoSymbol for companion of ${symbol}"
+	
+	def getDeclaration(typ:Type, name:String):Tried[String,Symbol]	=
+			typ					declaration
+			newTermName(name)	preventBy 
+			{ _ == NoSymbol }	toWin 
+			s"unexpected NoSymbol for companion declaration ${name} of type ${typ}"
 }

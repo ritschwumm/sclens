@@ -20,80 +20,26 @@ final class Lenser[T] extends Dynamic {
 	def selectDynamic(propName:String)	= macro LenserImpl.selectDynamic[T]
 }
 
-object LenserImpl {
+private object LenserImpl {
 	/*
 	def selectDynamic[T:c.WeakTypeTag](c:Context)(propName:c.Expr[String])	=
-			applyDynamic[T](c)(propName)()
-	
-	def applyDynamic[T:c.WeakTypeTag](c:Context)(propName:c.Expr[String])()	= {
+	def applyDynamic[T:c.WeakTypeTag](c:Context)(propName:c.Expr[String])()	=
 	*/
 	
-	def selectDynamic[T:c.WeakTypeTag](c:Context)(propName:c.Expr[String])	= {
-		import c.universe._
+	def selectDynamic[T:c1.WeakTypeTag](c1:Context)(propName:c1.Expr[String]):c1.Expr[Any]	=
+			new LenserImpl { val c:c1.type = c1 } compile propName
+}
+
+private abstract class LenserImpl extends Helper {
+	val c:Context
+	import c.universe._
 		
-		def mkLens(containerName:TermName, containerType:Type, valueName:TermName, valueType:Type, fieldName:TermName)	=
-				Apply(
-					TypeApply(
-						multiSelect("scutil", "lens", "TLens", "create"),
-						List(
-							TypeTree(containerType),
-							TypeTree(valueType)
-						)
-					),
-					List(
-						mkGetter(containerName, containerType, fieldName),
-						mkSetter(containerName, containerType, valueName, valueType, fieldName)
-					)
-				)
-				
-		def mkGetter(containerName:TermName, containerType:Type, fieldName:TermName)	=
-				Function(
-					List(
-						mkParam(containerName, containerType)
-					),
-					mkAccess(containerName, fieldName)
-				)
-				
-		def mkSetter(containerName:TermName, containerType:Type, valueName:TermName, valueType:Type, fieldName:TermName)	=
-				Function(
-					List(
-						mkParam(containerName,	containerType),
-						mkParam(valueName,		valueType)
-					),
-					Apply(
-						mkAccess(containerName, "copy"),
-						List(
-							AssignOrNamedArg(
-								Ident(fieldName),
-								Ident(valueName)
-							)
-						 )
-					)
-				)
-				
-		def mkParam(name:TermName, tpe:Type)	=
-				ValDef(
-					Modifiers(Flag.PARAM),
-					name, 
-					TypeTree(tpe),
-					EmptyTree
-				)
-				
-		def mkAccess(a:TermName, b:TermName)	=
-				Select(
-					Ident(a), 
-					b
-				)
-				
-		def multiSelect(start:String, names:String*):RefTree	=
-				multiSelect1(Ident(newTermName(start)), names:_*)
-			
-		def multiSelect1(start:RefTree, names:String*):RefTree	=
-				(names foldLeft start) { (last:RefTree, name:String) => 
-					Select(last, newTermName(name)) 
-				}
-				
-		val out	=
+	//------------------------------------------------------------------------------
+	
+	def compile[T:c.WeakTypeTag](propName:c.Expr[String]):c.Expr[Any]	= {
+		val targetType	= c.weakTypeOf[T]
+		
+		val out:Tried[String,Apply]	=
 				for {
 					name	<- 
 							propName.tree										matchOption 
@@ -113,8 +59,46 @@ object LenserImpl {
 				}
 				yield mkLens("c$", containerTpe, "v$", valueTpe, name)
 				
-		out cata (
-				it	=> c abort (c.enclosingPosition, it),
-				it	=> c.Expr[Any](c resetAllAttrs it))
+		result(out)
 	}
+	
+	def mkLens(containerName:TermName, containerType:Type, valueName:TermName, valueType:Type, fieldName:TermName):Apply	=
+			Apply(
+				TypeApply(
+					multiSelect("scutil", "lens", "TLens", "create"),
+					List(
+						TypeTree(containerType),
+						TypeTree(valueType)
+					)
+				),
+				List(
+					mkGetter(containerName, containerType, fieldName),
+					mkSetter(containerName, containerType, valueName, valueType, fieldName)
+				)
+			)
+			
+	def mkGetter(containerName:TermName, containerType:Type, fieldName:TermName):Function	=
+			Function(
+				List(
+					mkParam(containerName, containerType)
+				),
+				mkAccess(containerName, fieldName)
+			)
+			
+	def mkSetter(containerName:TermName, containerType:Type, valueName:TermName, valueType:Type, fieldName:TermName):Function	=
+			Function(
+				List(
+					mkParam(containerName,	containerType),
+					mkParam(valueName,		valueType)
+				),
+				Apply(
+					mkAccess(containerName, "copy"),
+					List(
+						AssignOrNamedArg(
+							Ident(fieldName),
+							Ident(valueName)
+						)
+					 )
+				)
+			)
 }
