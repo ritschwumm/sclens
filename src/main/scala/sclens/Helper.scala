@@ -43,9 +43,8 @@ private trait Helper {
 			
 	//------------------------------------------------------------------------------
 	
-	def result[T<:Tree](out:Tried[String,T])	= {
-		out cata (
-				it	=> c abort (c.enclosingPosition, it),
-				it	=> c.Expr[Any](c resetAllAttrs it))
-	}
+	def result[T<:Tree](out:Tried[String,T])	=
+			out cata (
+					it	=> c abort (c.enclosingPosition, it),
+					it	=> c.Expr[Any](c resetAllAttrs it))
 }

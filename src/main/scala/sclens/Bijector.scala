@@ -78,17 +78,17 @@ private abstract class BijectorImpl extends Helper {
 								}
 							}
 							
-					applyTmp		<-
+					applyTmp	<-
 							applyMethods1
 							.singleOption
-							.toWin (s"expected a single apply method matching unapply's types")
+							.toWin		(s"expected a single apply method matching unapply's types")
 							
 					(applyMethod, applySignature)	
 									= applyTmp
 							
-					_				<- 
-							(applyMethod.paramss.size == 1)
-							.tried (s"expected apply to have a single parameter list", ())
+					_			<- 
+							(applyMethod.paramss.size == 1) 
+							.trueWin	(s"expected apply to have a single parameter list")
 				}
 				yield mkBijection(
 					mkWriteFunc(companionSymbol, selfType), 
@@ -102,6 +102,8 @@ private abstract class BijectorImpl extends Helper {
 			// BETTER use typeApply?
 			Apply(
 				multiSelect("scutil", "lang", "Bijection", "apply"),
+				// NOTE does work at first, but lead to "value not found: Bijection" later - why?
+				// Select(reify(scutil.lang.Bijection).tree, "apply":TermName),
 				List(
 					writeFunc,
 					readFunc

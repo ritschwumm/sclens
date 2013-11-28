@@ -66,18 +66,20 @@ private abstract class LenserImpl extends Helper {
 			Apply(
 				TypeApply(
 					multiSelect("scutil", "lens", "TLens", "create"),
+					// NOTE doesn't work - why?
+					// Select(reify(scutil.lens.TLens).tree, "create":TermName),
 					List(
 						TypeTree(containerType),
 						TypeTree(valueType)
 					)
 				),
 				List(
-					mkGetter(containerName, containerType, fieldName),
-					mkSetter(containerName, containerType, valueName, valueType, fieldName)
+					mkGetFunc(containerName, containerType, fieldName),
+					mkSetFunc(containerName, containerType, valueName, valueType, fieldName)
 				)
 			)
 			
-	def mkGetter(containerName:TermName, containerType:Type, fieldName:TermName):Function	=
+	def mkGetFunc(containerName:TermName, containerType:Type, fieldName:TermName):Function	=
 			Function(
 				List(
 					mkParam(containerName, containerType)
@@ -85,7 +87,7 @@ private abstract class LenserImpl extends Helper {
 				mkAccess(containerName, fieldName)
 			)
 			
-	def mkSetter(containerName:TermName, containerType:Type, valueName:TermName, valueType:Type, fieldName:TermName):Function	=
+	def mkSetFunc(containerName:TermName, containerType:Type, valueName:TermName, valueType:Type, fieldName:TermName):Function	=
 			Function(
 				List(
 					mkParam(containerName,	containerType),
