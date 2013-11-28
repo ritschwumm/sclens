@@ -2,12 +2,12 @@ name			:= "sclens"
 
 organization	:= "de.djini"
 
-version			:= "0.2.0"
+version			:= "0.3.0"
 
 scalaVersion	:= "2.10.0"
 
 libraryDependencies	++= Seq(
-	"de.djini"		%%	"scutil"	% "0.16.0"	% "compile",
+	"de.djini"		%%	"scutil"	% "0.17.0"	% "compile",
 	"org.specs2"	%%	"specs2"	% "1.14"	% "test"
 )
 

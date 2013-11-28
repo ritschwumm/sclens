@@ -13,7 +13,7 @@ object Bijector {
 	
 	def apply[T]	= macro applyImpl[T]
 	
-	def applyImpl[T:c.WeakTypeTag](c:Context)	= {
+	def applyImpl[T:c.WeakTypeTag](c:Context):c.Expr[Any]	= {
 		import c.universe._
 		
 		val selfType	= weakTypeOf[T]
@@ -82,7 +82,7 @@ object Bijector {
 							applyMethods 
 							.collect {
 								 case (method:MethodSymbol) 
-								 if (method.paramss.singleOption map ( _.map (_.asTerm.typeSignature))) == Some(applySignature)
+								 if method.paramss.singleOption map { _ map { _.asTerm.typeSignature } } exists { _ == applySignature }
 								 => method
 							}
 							
