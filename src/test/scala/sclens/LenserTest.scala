@@ -3,7 +3,7 @@ package sclens
 import org.specs2.mutable._
 
 import scutil.lang._
-import scutil.Implicits._
+import scutil.implicits._
 
 case class Foo(a:Int, b:String)
 case class Bar[T](t:T)
